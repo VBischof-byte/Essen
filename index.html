@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speisenauswahl</title>
+    <title>Meine Speisenauswahl</title>
     <style>
-        /* Modernes Design direkt integriert */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
         h1 { text-align: center; color: #2c3e50; }
-        
-        /* Eingabebereich oben */
         .input-section { 
             max-width: 800px; margin: 0 auto 30px; background: white; padding: 20px; 
             border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
@@ -17,31 +14,17 @@
         }
         input, select, button { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
         .btn-add { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
-        .btn-add:hover { background-color: #219150; }
-
-        /* Spalten-Layout (Herzhaft | Süß) */
         .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
         .column { background: white; padding: 20px; border-radius: 12px; flex: 1; min-width: 300px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { border-bottom: 3px solid #27ae60; padding-bottom: 10px; color: #2c3e50; margin-top: 0; }
-        
-        /* Liste der Gerichte */
         ul { list-style: none; padding: 0; }
-        li { 
-            padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; 
-            display: flex; justify-content: space-between; align-items: center; 
-        }
-        li:hover { background: #f9f9f9; }
-        .item-text { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+        li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .item-text { cursor: pointer; display: flex; align-items: center; gap: 8px; flex-grow: 1; }
         .recipe-link { color: #2980b9; font-size: 1.2em; }
-        
-        /* Lösch-Button */
-        .btn-delete { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-delete:hover { background: #ff6b81; }
-
-        /* Modal für das Rezept-Bild */
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
         .modal-content { margin: auto; display: block; max-width: 90%; max-height: 85%; margin-top: 50px; border: 4px solid white; border-radius: 8px; }
-        .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
+        .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -49,12 +32,12 @@
     <h1>Speisenauswahl</h1>
 
     <div class="input-section">
-        <input type="text" id="foodName" placeholder="Gericht Name">
+        <input type="text" id="foodName" placeholder="Neues Gericht">
         <select id="foodCategory">
             <option value="herzhaft">Herzhaft</option>
             <option value="suess">Süß</option>
         </select>
-        <input type="text" id="recipeFile" placeholder="Bildname (z.B. pizza.jpg)">
+        <input type="text" id="recipeFile" placeholder="Bildname (z.B. Pizza.jpg)">
         <button class="btn-add" onclick="addFood()">Hinzufügen</button>
     </div>
 
@@ -75,18 +58,37 @@
     </div>
 
     <script>
-        // Daten aus dem Browser-Speicher laden oder Standardliste nutzen
-        let speisen = JSON.parse(localStorage.getItem('speisenDaten')) || {
+        // Deine komplette Liste aus dem Bild
+        const standardSpeisen = {
             herzhaft: [
-                { name: "Nudelauflauf", img: "nudelauflauf.jpg" },
+                { name: "TK-Speisen", img: "" },
                 { name: "Zucchini", img: "" },
-                { name: "Pizza", img: "pizza.jpg" }
+                { name: "Frühlingsrollen", img: "" },
+                { name: "Hofmanns", img: "" },
+                { name: "Ofengemüse", img: "" },
+                { name: "Pizza", img: "Pizza.jpg" },
+                { name: "Kartoffelpuffer", img: "" },
+                { name: "Selbstgemachte Pizza", img: "" },
+                { name: "Nudelauflauf", img: "Nudelauflauf.jpg" },
+                { name: "Bratwurst", img: "" },
+                { name: "Salat", img: "" },
+                { name: "Suppen", img: "" },
+                { name: "Steak", img: "" },
+                { name: "Kartoffeln mit Quark", img: "" }
             ],
             suess: [
-                { name: "Milchreis", img: "Milchreis.jpg" },
-                { name: "Waffeln", img: "waffeln.jpg" }
+                { name: "Milchreis", img: "Milchreis.JPG" },
+                { name: "Griesbrei", img: "Griesbrei.JPG" },
+                { name: "Kaiserschmarrn", img: "" },
+                { name: "Schmalzgebäck", img: "" },
+                { name: "Ofenpfannkuchen", img: "" },
+                { name: "Quarkbällchen", img: "" },
+                { name: "Waffeln", img: "Waffeln.jpg" },
+                { name: "Gebratene Bananen", img: "" }
             ]
         };
+
+        let speisen = JSON.parse(localStorage.getItem('speisenDaten')) || standardSpeisen;
 
         function render() {
             document.getElementById('herzhaft-list').innerHTML = "";
@@ -95,17 +97,14 @@
             for (let kat in speisen) {
                 speisen[kat].forEach((item, index) => {
                     const li = document.createElement('li');
-                    
-                    // Link-Logik: Nur wenn ein Bildname hinterlegt ist, wird das Buch-Icon gezeigt
-                    const recipeIcon = item.img ? `<span class="recipe-link">📖</span>` : "";
+                    const icon = item.img ? '<span class="recipe-link">📖</span>' : '';
                     
                     li.innerHTML = `
                         <div class="item-text" onclick="${item.img ? `openRecipe('${item.img}')` : ''}">
-                            ${item.name} ${recipeIcon}
+                            ${item.name} ${icon}
                         </div>
                         <button class="btn-delete" onclick="deleteFood('${kat}', ${index})">Löschen</button>
                     `;
-                    
                     document.getElementById(kat + '-list').appendChild(li);
                 });
             }
@@ -115,11 +114,9 @@
             const name = document.getElementById('foodName').value;
             const kat = document.getElementById('foodCategory').value;
             const img = document.getElementById('recipeFile').value;
-
-            if (name.trim() !== "") {
+            if (name.trim()) {
                 speisen[kat].push({ name, img });
                 saveAndRender();
-                // Felder leeren
                 document.getElementById('foodName').value = "";
                 document.getElementById('recipeFile').value = "";
             }
@@ -136,7 +133,6 @@
         }
 
         function openRecipe(fileName) {
-            // Sucht das Bild direkt im Hauptverzeichnis
             document.getElementById('recipeImg').src = fileName;
             document.getElementById('recipeModal').style.display = "block";
         }
@@ -145,9 +141,7 @@
             document.getElementById('recipeModal').style.display = "none";
         }
 
-        // Initiales Laden
         render();
     </script>
 </body>
 </html>
-
