@@ -25,6 +25,8 @@
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
         .modal-content { margin: auto; display: block; max-width: 90%; max-height: 85%; margin-top: 50px; border: 4px solid white; border-radius: 8px; }
         .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
+        .reset-box { text-align: center; margin-top: 20px; }
+        .btn-reset { background: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -52,13 +54,16 @@
         </div>
     </div>
 
+    <div class="reset-box">
+        <button class="btn-reset" onclick="resetToStandard()">Liste auf Standard zurücksetzen</button>
+    </div>
+
     <div id="recipeModal" class="modal" onclick="closeModal()">
         <span class="close">&times;</span>
         <img class="modal-content" id="recipeImg">
     </div>
 
     <script>
-        // Deine komplette Liste aus dem Bild
         const standardSpeisen = {
             herzhaft: [
                 { name: "TK-Speisen", img: "" },
@@ -66,10 +71,10 @@
                 { name: "Frühlingsrollen", img: "" },
                 { name: "Hofmanns", img: "" },
                 { name: "Ofengemüse", img: "" },
-                { name: "Pizza", img: "Pizza.jpg" },
+                { name: "Pizza", img: "" },
                 { name: "Kartoffelpuffer", img: "" },
                 { name: "Selbstgemachte Pizza", img: "" },
-                { name: "Nudelauflauf", img: "Nudelauflauf.jpg" },
+                { name: "Nudelauflauf", img: "" },
                 { name: "Bratwurst", img: "" },
                 { name: "Salat", img: "" },
                 { name: "Suppen", img: "" },
@@ -77,13 +82,13 @@
                 { name: "Kartoffeln mit Quark", img: "" }
             ],
             suess: [
-                { name: "Milchreis", img: "Milchreis.JPG" },
-                { name: "Griesbrei", img: "Griesbrei.JPG" },
+                { name: "Milchreis", img: "Milchreis.jpg" },
+                { name: "Griesbrei", img: "Griesbrei.jpg" },
                 { name: "Kaiserschmarrn", img: "" },
                 { name: "Schmalzgebäck", img: "" },
                 { name: "Ofenpfannkuchen", img: "" },
                 { name: "Quarkbällchen", img: "" },
-                { name: "Waffeln", img: "Waffeln.jpg" },
+                { name: "Waffeln", img: "" },
                 { name: "Gebratene Bananen", img: "" }
             ]
         };
@@ -91,10 +96,13 @@
         let speisen = JSON.parse(localStorage.getItem('speisenDaten')) || standardSpeisen;
 
         function render() {
-            document.getElementById('herzhaft-list').innerHTML = "";
-            document.getElementById('suess-list').innerHTML = "";
+            ['herzhaft', 'suess'].forEach(kat => {
+                const listElement = document.getElementById(kat + '-list');
+                listElement.innerHTML = "";
 
-            for (let kat in speisen) {
+                // Sortierung Alphabetisch
+                speisen[kat].sort((a, b) => a.name.localeCompare(b.name));
+
                 speisen[kat].forEach((item, index) => {
                     const li = document.createElement('li');
                     const icon = item.img ? '<span class="recipe-link">📖</span>' : '';
@@ -105,9 +113,9 @@
                         </div>
                         <button class="btn-delete" onclick="deleteFood('${kat}', ${index})">Löschen</button>
                     `;
-                    document.getElementById(kat + '-list').appendChild(li);
+                    listElement.appendChild(li);
                 });
-            }
+            });
         }
 
         function addFood() {
@@ -125,6 +133,13 @@
         function deleteFood(kat, index) {
             speisen[kat].splice(index, 1);
             saveAndRender();
+        }
+
+        function resetToStandard() {
+            if(confirm("Möchtest du die Liste wirklich auf die ursprünglichen Speisen zurücksetzen?")) {
+                speisen = JSON.parse(JSON.stringify(standardSpeisen));
+                saveAndRender();
+            }
         }
 
         function saveAndRender() {
