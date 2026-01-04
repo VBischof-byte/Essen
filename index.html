@@ -3,39 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Speisenauswahl</title>
+    <title>Speisenauswahl</title>
     <style>
-        /* Grunddesign */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        /* Modernes Design direkt integriert */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
         h1 { text-align: center; color: #2c3e50; }
         
-        /* Eingabebereich */
+        /* Eingabebereich oben */
         .input-section { 
-            max-width: 650px; margin: 0 auto 30px; background: white; padding: 20px; 
-            border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            max-width: 800px; margin: 0 auto 30px; background: white; padding: 20px; 
+            border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
         }
         input, select, button { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        button { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #219150; }
+        .btn-add { background-color: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background-color: #219150; }
 
-        /* Spalten-Layout */
+        /* Spalten-Layout (Herzhaft | Süß) */
         .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 1000px; margin: 0 auto; }
-        .column { background: white; padding: 20px; border-radius: 12px; width: 320px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-height: 400px; }
-        h2 { border-bottom: 3px solid #27ae60; padding-bottom: 10px; color: #2c3e50; }
+        .column { background: white; padding: 20px; border-radius: 12px; flex: 1; min-width: 300px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 3px solid #27ae60; padding-bottom: 10px; color: #2c3e50; margin-top: 0; }
         
-        /* Liste */
+        /* Liste der Gerichte */
         ul { list-style: none; padding: 0; }
         li { 
-            padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
+            padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center; 
         }
-        li:hover { background: #f9f9f9; color: #2980b9; }
-        .recipe-icon { margin-left: 8px; font-size: 1.2em; }
-        .delete-btn { background: #e74c3c; color: white; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        li:hover { background: #f9f9f9; }
+        .item-text { display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+        .recipe-link { color: #2980b9; font-size: 1.2em; }
+        
+        /* Lösch-Button */
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-delete:hover { background: #ff6b81; }
 
-        /* Modal für Rezept-Bilder */
-        .modal { display: none; position: fixed; z-index: 100; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); text-align: center; }
-        .modal-content { margin: auto; display: block; max-width: 90%; max-height: 85%; margin-top: 40px; border: 5px solid white; border-radius: 10px; }
-        .close { position: absolute; top: 15px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
+        /* Modal für das Rezept-Bild */
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
+        .modal-content { margin: auto; display: block; max-width: 90%; max-height: 85%; margin-top: 50px; border: 4px solid white; border-radius: 8px; }
+        .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -48,8 +54,8 @@
             <option value="herzhaft">Herzhaft</option>
             <option value="suess">Süß</option>
         </select>
-        <input type="text" id="recipeLink" placeholder="z.B. pizza.jpg">
-        <button onclick="addFood()">Hinzufügen</button>
+        <input type="text" id="recipeFile" placeholder="Bildname (z.B. pizza.jpg)">
+        <button class="btn-add" onclick="addFood()">Hinzufügen</button>
     </div>
 
     <div class="container">
@@ -57,7 +63,6 @@
             <h2>Herzhaft</h2>
             <ul id="herzhaft-list"></ul>
         </div>
-
         <div class="column">
             <h2>Süß</h2>
             <ul id="suess-list"></ul>
@@ -70,10 +75,78 @@
     </div>
 
     <script>
-        // Datenverwaltung (LocalStorage)
-        let speisen = JSON.parse(localStorage.getItem('meineSpeisen')) || { herzhaft: [], suess: [] };
+        // Daten aus dem Browser-Speicher laden oder Standardliste nutzen
+        let speisen = JSON.parse(localStorage.getItem('speisenDaten')) || {
+            herzhaft: [
+                { name: "Nudelauflauf", img: "nudelauflauf.jpg" },
+                { name: "Zucchini", img: "" },
+                { name: "Pizza", img: "pizza.jpg" }
+            ],
+            suess: [
+                { name: "Milchreis", img: "milchreis.jpg" },
+                { name: "Waffeln", img: "waffeln.jpg" }
+            ]
+        };
 
-        // Falls die Liste ganz leer ist, füllen wir sie mit deinen Startwerten
-        if (speisen.herzhaft.length === 0 && speisen.suess.length === 0) {
-            speisen.herzhaft = [
-                {name: "
+        function render() {
+            document.getElementById('herzhaft-list').innerHTML = "";
+            document.getElementById('suess-list').innerHTML = "";
+
+            for (let kat in speisen) {
+                speisen[kat].forEach((item, index) => {
+                    const li = document.createElement('li');
+                    
+                    // Link-Logik: Nur wenn ein Bildname hinterlegt ist, wird das Buch-Icon gezeigt
+                    const recipeIcon = item.img ? `<span class="recipe-link">📖</span>` : "";
+                    
+                    li.innerHTML = `
+                        <div class="item-text" onclick="${item.img ? `openRecipe('${item.img}')` : ''}">
+                            ${item.name} ${recipeIcon}
+                        </div>
+                        <button class="btn-delete" onclick="deleteFood('${kat}', ${index})">Löschen</button>
+                    `;
+                    
+                    document.getElementById(kat + '-list').appendChild(li);
+                });
+            }
+        }
+
+        function addFood() {
+            const name = document.getElementById('foodName').value;
+            const kat = document.getElementById('foodCategory').value;
+            const img = document.getElementById('recipeFile').value;
+
+            if (name.trim() !== "") {
+                speisen[kat].push({ name, img });
+                saveAndRender();
+                // Felder leeren
+                document.getElementById('foodName').value = "";
+                document.getElementById('recipeFile').value = "";
+            }
+        }
+
+        function deleteFood(kat, index) {
+            speisen[kat].splice(index, 1);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('speisenDaten', JSON.stringify(speisen));
+            render();
+        }
+
+        function openRecipe(fileName) {
+            // Sucht das Bild direkt im Hauptverzeichnis
+            document.getElementById('recipeImg').src = fileName;
+            document.getElementById('recipeModal').style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById('recipeModal').style.display = "none";
+        }
+
+        // Initiales Laden
+        render();
+    </script>
+</body>
+</html>
