@@ -18,15 +18,19 @@
         .column { background: white; padding: 20px; border-radius: 12px; flex: 1; min-width: 300px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h2 { border-bottom: 3px solid #27ae60; padding-bottom: 10px; color: #2c3e50; margin-top: 0; }
         ul { list-style: none; padding: 0; }
-        li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .item-text { cursor: pointer; display: flex; align-items: center; gap: 8px; flex-grow: 1; }
+        li { padding: 12px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 5px; }
+        .row-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .item-text { cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 500; }
         .recipe-link { color: #2980b9; font-size: 1.2em; }
-        .btn-delete { background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
-        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
-        .modal-content { margin: auto; display: block; max-width: 90%; max-height: 85%; margin-top: 50px; border: 4px solid white; border-radius: 8px; }
+        .btn-plus { background: #3498db; color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        .comment-text { font-size: 0.85em; color: #7f8c8d; font-style: italic; margin-top: 2px; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        .modal-content-box { background: white; width: 300px; margin: 100px auto; padding: 20px; border-radius: 10px; text-align: center; }
+        .modal-img { margin: auto; display: block; max-width: 90%; max-height: 70%; margin-top: 50px; border: 4px solid white; border-radius: 8px; }
         .close { position: absolute; top: 20px; right: 35px; color: white; font-size: 40px; cursor: pointer; }
-        .reset-box { text-align: center; margin-top: 20px; }
-        .btn-reset { background: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -39,7 +43,6 @@
             <option value="herzhaft">Herzhaft</option>
             <option value="suess">Süß</option>
         </select>
-        <input type="text" id="recipeFile" placeholder="Bildname (z.B. Pizza.jpg)">
         <button class="btn-add" onclick="addFood()">Hinzufügen</button>
     </div>
 
@@ -54,92 +57,111 @@
         </div>
     </div>
 
-    <div class="reset-box">
-        <button class="btn-reset" onclick="resetToStandard()">Liste auf Standard zurücksetzen</button>
+    <div id="editModal" class="modal">
+        <div class="modal-content-box">
+            <h3>Bearbeiten</h3>
+            <p id="editTargetName" style="font-weight:bold"></p>
+            <input type="text" id="editComment" placeholder="Kommentar (z.B. sehr lecker)" style="width:90%"><br><br>
+            <input type="text" id="editImg" placeholder="Bildname (z.B. Foto.jpg)" style="width:90%"><br><br>
+            <button onclick="saveEdit()">Speichern</button>
+            <button onclick="closeEdit()" style="background:#bdc3c7">Abbrechen</button>
+        </div>
     </div>
 
-    <div id="recipeModal" class="modal" onclick="closeModal()">
+    <div id="recipeModal" class="modal" onclick="this.style.display='none'">
         <span class="close">&times;</span>
-        <img class="modal-content" id="recipeImg">
+        <img class="modal-img" id="recipeImg">
     </div>
 
     <script>
+        // Start-Daten basierend auf deinem Bild
         const standardSpeisen = {
             herzhaft: [
-                { name: "TK-Speisen", img: "" },
-                { name: "Zucchini", img: "" },
-                { name: "Frühlingsrollen", img: "" },
-                { name: "Hofmanns", img: "" },
-                { name: "Ofengemüse", img: "" },
-                { name: "Pizza", img: "" },
-                { name: "Kartoffelpuffer", img: "" },
-                { name: "Selbstgemachte Pizza", img: "" },
-                { name: "Nudelauflauf", img: "" },
-                { name: "Bratwurst", img: "" },
-                { name: "Salat", img: "" },
-                { name: "Suppen", img: "" },
-                { name: "Steak", img: "" },
-                { name: "Kartoffeln mit Quark", img: "" }
+                { name: "Bratwurst", img: "", note: "" },
+                { name: "Frühlingsrollen", img: "", note: "" },
+                { name: "Hofmanns", img: "", note: "" },
+                { name: "Kartoffeln mit Quark", img: "", note: "" },
+                { name: "Kartoffelpuffer", img: "", note: "" },
+                { name: "Nudelauflauf", img: "", note: "" },
+                { name: "Ofengemüse", img: "", note: "" },
+                { name: "Pizza", img: "", note: "" },
+                { name: "Salat", img: "", note: "" },
+                { name: "Selbstgemachte Pizza", img: "", note: "" },
+                { name: "Steak", img: "", note: "" },
+                { name: "Suppen", img: "", note: "" },
+                { name: "TK-Speisen", img: "", note: "" },
+                { name: "Zucchini", img: "", note: "" }
             ],
             suess: [
-                { name: "Milchreis", img: "Milchreis.jpg" },
-                { name: "Griesbrei", img: "Griesbrei.jpg" },
-                { name: "Kaiserschmarrn", img: "" },
-                { name: "Schmalzgebäck", img: "" },
-                { name: "Ofenpfannkuchen", img: "" },
-                { name: "Quarkbällchen", img: "" },
-                { name: "Waffeln", img: "" },
-                { name: "Gebratene Bananen", img: "" }
+                { name: "Gebratene Bananen", img: "", note: "" },
+                { name: "Griesbrei", img: "Griesbrei.jpg", note: "" },
+                { name: "Kaiserschmarrn", img: "", note: "" },
+                { name: "Milchreis", img: "Milchreis.jpg", note: "" },
+                { name: "Ofenpfannkuchen", img: "", note: "" },
+                { name: "Quarkbällchen", img: "", note: "" },
+                { name: "Schmalzgebäck", img: "", note: "" },
+                { name: "Waffeln", img: "", note: "" }
             ]
         };
 
         let speisen = JSON.parse(localStorage.getItem('speisenDaten')) || standardSpeisen;
+        let currentEdit = { cat: '', index: -1 };
 
         function render() {
             ['herzhaft', 'suess'].forEach(kat => {
-                const listElement = document.getElementById(kat + '-list');
-                listElement.innerHTML = "";
-
-                // Sortierung Alphabetisch
+                const list = document.getElementById(kat + '-list');
+                list.innerHTML = "";
                 speisen[kat].sort((a, b) => a.name.localeCompare(b.name));
 
                 speisen[kat].forEach((item, index) => {
                     const li = document.createElement('li');
-                    const icon = item.img ? '<span class="recipe-link">📖</span>' : '';
-                    
                     li.innerHTML = `
-                        <div class="item-text" onclick="${item.img ? `openRecipe('${item.img}')` : ''}">
-                            ${item.name} ${icon}
+                        <div class="row-top">
+                            <div class="item-text" onclick="${item.img ? `openRecipe('${item.img}')` : ''}">
+                                ${item.name} ${item.img ? '<span class="recipe-link">📖</span>' : ''}
+                                <button class="btn-plus" onclick="event.stopPropagation(); openEdit('${kat}', ${index})">+</button>
+                            </div>
+                            <button class="btn-delete" onclick="deleteFood('${kat}', ${index})">Löschen</button>
                         </div>
-                        <button class="btn-delete" onclick="deleteFood('${kat}', ${index})">Löschen</button>
+                        ${item.note ? `<div class="comment-text">${item.note}</div>` : ''}
                     `;
-                    listElement.appendChild(li);
+                    list.appendChild(li);
                 });
             });
         }
 
+        function openEdit(cat, index) {
+            currentEdit = { cat, index };
+            const item = speisen[cat][index];
+            document.getElementById('editTargetName').innerText = item.name;
+            document.getElementById('editComment').value = item.note || "";
+            document.getElementById('editImg').value = item.img || "";
+            document.getElementById('editModal').style.display = "block";
+        }
+
+        function saveEdit() {
+            const item = speisen[currentEdit.cat][currentEdit.index];
+            item.note = document.getElementById('editComment').value;
+            item.img = document.getElementById('editImg').value;
+            saveAndRender();
+            closeEdit();
+        }
+
+        function closeEdit() { document.getElementById('editModal').style.display = "none"; }
+
         function addFood() {
             const name = document.getElementById('foodName').value;
             const kat = document.getElementById('foodCategory').value;
-            const img = document.getElementById('recipeFile').value;
             if (name.trim()) {
-                speisen[kat].push({ name, img });
+                speisen[kat].push({ name, img: "", note: "" });
                 saveAndRender();
                 document.getElementById('foodName').value = "";
-                document.getElementById('recipeFile').value = "";
             }
         }
 
         function deleteFood(kat, index) {
             speisen[kat].splice(index, 1);
             saveAndRender();
-        }
-
-        function resetToStandard() {
-            if(confirm("Möchtest du die Liste wirklich auf die ursprünglichen Speisen zurücksetzen?")) {
-                speisen = JSON.parse(JSON.stringify(standardSpeisen));
-                saveAndRender();
-            }
         }
 
         function saveAndRender() {
@@ -150,10 +172,6 @@
         function openRecipe(fileName) {
             document.getElementById('recipeImg').src = fileName;
             document.getElementById('recipeModal').style.display = "block";
-        }
-
-        function closeModal() {
-            document.getElementById('recipeModal').style.display = "none";
         }
 
         render();
