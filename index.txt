@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Speisenauswahl</title>
+    <title>Meine Rezept-App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>Speisenauswahl</h1>
+    <h1>Speisen-Verwaltung</h1>
+
+    <div class="input-section">
+        <input type="text" id="foodName" placeholder="Name des Gerichts">
+        <select id="foodCategory">
+            <option value="herzhaft">Herzhaft</option>
+            <option value="suess">Süß</option>
+        </select>
+        <input type="text" id="recipeLink" placeholder="Bildname (z.B. pizza.jpg) - optional">
+        <button onclick="addFood()">Hinzufügen</button>
+    </div>
 
     <div class="container">
         <div class="column">
             <h2>Herzhaft</h2>
-            <ul id="herzhaft-list">
-                <li onclick="showRecipe('rezepte/nudelauflauf.jpg')">Nudelauflauf 📖</li>
-                <li>Zucchini</li>
-                <li onclick="showRecipe('rezepte/pizza.jpg')">Pizza 📖</li>
-                <li>Bratwurst</li>
-                <li>Kartoffeln mit Quark</li>
-                </ul>
+            <ul id="herzhaft-list"></ul>
         </div>
 
         <div class="column">
             <h2>Süß</h2>
-            <ul id="suess-list">
-                <li onclick="showRecipe('rezepte/milchreis.jpg')">Milchreis 📖</li>
-                <li>Griesbrei</li>
-                <li onclick="showRecipe('rezepte/waffeln.jpg')">Waffeln 📖</li>
-                <li>Gebratene Bananen</li>
-            </ul>
+            <ul id="suess-list"></ul>
         </div>
     </div>
 
@@ -39,16 +38,66 @@
     </div>
 
     <script>
-        function showRecipe(imgPath) {
-            if(imgPath) {
-                document.getElementById("recipeModal").style.display = "block";
-                document.getElementById("recipeImg").src = imgPath;
+        // Daten beim Start laden
+        let speisen = JSON.parse(localStorage.getItem('meineSpeisen')) || { herzhaft: [], suess: [] };
+        
+        // Initiale Liste aus deinem Bild (falls Speicher leer ist)
+        if (speisen.herzhaft.length === 0 && speisen.suess.length === 0) {
+            speisen.herzhaft = [{name: "Zucchini", link: ""}, {name: "Nudelauflauf", link: "nudelauflauf.jpg"}];
+            speisen.suess = [{name: "Waffeln", link: "waffeln.jpg"}];
+            save();
+        }
+
+        function render() {
+            document.getElementById('herzhaft-list').innerHTML = "";
+            document.getElementById('suess-list').innerHTML = "";
+
+            ['herzhaft', 'suess'].forEach(cat => {
+                speisen[cat].forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = item.name + (item.link ? " 📖" : "");
+                    if(item.link) li.onclick = () => showRecipe('rezepte/' + item.link);
+                    
+                    // Lösch-Button
+                    const btn = document.createElement('button');
+                    btn.innerText = "X";
+                    btn.className = "delete-btn";
+                    btn.onclick = (e) => { e.stopPropagation(); deleteFood(cat, index); };
+                    
+                    li.appendChild(btn);
+                    document.getElementById(cat + '-list').appendChild(li);
+                });
+            });
+        }
+
+        function addFood() {
+            const name = document.getElementById('foodName').value;
+            const cat = document.getElementById('foodCategory').value;
+            const link = document.getElementById('recipeLink').value;
+            
+            if(name) {
+                speisen[cat].push({ name, link });
+                save();
+                render();
+                document.getElementById('foodName').value = "";
+                document.getElementById('recipeLink').value = "";
             }
         }
 
-        function closeModal() {
-            document.getElementById("recipeModal").style.display = "none";
+        function deleteFood(cat, index) {
+            speisen[cat].splice(index, 1);
+            save();
+            render();
         }
+
+        function save() { localStorage.setItem('meineSpeisen', JSON.stringify(speisen)); }
+        function showRecipe(path) { 
+            document.getElementById("recipeModal").style.display = "block";
+            document.getElementById("recipeImg").src = path;
+        }
+        function closeModal() { document.getElementById("recipeModal").style.display = "none"; }
+
+        render();
     </script>
 </body>
 </html>
