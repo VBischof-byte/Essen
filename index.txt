@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meine Speisenauswahl</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Speisenauswahl</h1>
+
+    <div class="container">
+        <div class="column">
+            <h2>Herzhaft</h2>
+            <ul id="herzhaft-list">
+                <li onclick="showRecipe('rezepte/nudelauflauf.jpg')">Nudelauflauf 📖</li>
+                <li>Zucchini</li>
+                <li onclick="showRecipe('rezepte/pizza.jpg')">Pizza 📖</li>
+                <li>Bratwurst</li>
+                <li>Kartoffeln mit Quark</li>
+                </ul>
+        </div>
+
+        <div class="column">
+            <h2>Süß</h2>
+            <ul id="suess-list">
+                <li onclick="showRecipe('rezepte/milchreis.jpg')">Milchreis 📖</li>
+                <li>Griesbrei</li>
+                <li onclick="showRecipe('rezepte/waffeln.jpg')">Waffeln 📖</li>
+                <li>Gebratene Bananen</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="recipeModal" class="modal" onclick="closeModal()">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="recipeImg">
+    </div>
+
+    <script>
+        function showRecipe(imgPath) {
+            if(imgPath) {
+                document.getElementById("recipeModal").style.display = "block";
+                document.getElementById("recipeImg").src = imgPath;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("recipeModal").style.display = "none";
+        }
+    </script>
+</body>
+</html>
